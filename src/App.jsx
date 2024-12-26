@@ -1,22 +1,35 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretDown, faPlay } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCaretDown,
+  faCaretLeft,
+  faCaretUp,
+  faPause,
+  faPlay,
+} from "@fortawesome/free-solid-svg-icons";
+import { faCircleStop } from "@fortawesome/free-regular-svg-icons";
 
 function App() {
   const [pomodoro, setPomodoro] = useState(25);
+  const [shortBreak, setShortBreak] = useState(5);
+  const [longBreak, setLongBreak] = useState(15);
   const [time, setTime] = useState(pomodoro * 60);
   const [mode, setMode] = useState("Pomodoro");
   const [isOn, setIsOn] = useState(false);
-  const [isPaused, setIsPause] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [mainColor, setMainColor] = useState("#D42C2F");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
-  const [shortBreak, setShortBreak] = useState(5);
-  const [longBreak, setLongBreak] = useState(15);
 
   const [bgImgUrl, setBgImgUrl] = useState(
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   );
+
+  const timeSetter = () => {
+    if (mode === "Pomodoro") setTime(pomodoro * 60);
+    else if (mode === "Short Break") setTime(shortBreak * 60);
+    else setTime(longBreak * 60);
+  };
 
   useEffect(() => {
     if (mode === "Pomodoro") {
@@ -31,6 +44,18 @@ function App() {
       );
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (isOn && time !== 0 && !isPaused) {
+      const key = setTimeout(() => {
+        setTime((time) => time - 1);
+      }, 1000);
+
+      return () => {
+        clearTimeout(key);
+      };
+    }
+  }, [isOn, isPaused, time]);
 
   return (
     <div className="App" style={{ backgroundImage: `url(${bgImgUrl})` }}>
@@ -77,17 +102,53 @@ function App() {
             <button
               id="mode-select-btn"
               className="btn"
-              onClick={() => setIsSelectOpen(true)}
+              onClick={() => setIsSelectOpen(!isSelectOpen)}
             >
-              {mode} <FontAwesomeIcon icon={faCaretDown} />
+              {mode}{" "}
+              <FontAwesomeIcon icon={isSelectOpen ? faCaretUp : faCaretDown} />
             </button>
             <button
               className="btn"
               id="start-btn"
-              onClick={() => setIsOn(true)}
+              onClick={() => {
+                setIsOn(true);
+                setIsPaused(false);
+                timeSetter();
+              }}
             >
               <FontAwesomeIcon icon={faPlay} />
             </button>
+          </>
+        )}
+        {isOn && (
+          <>
+            <h3>{mode}</h3>
+            <h1 className="timer-time">
+              {String(Math.floor(time / 60)).padStart(2, "0")}:
+              {String(time % 60).padStart(2, "0")}
+            </h1>
+            <div className="btns-container">
+              <button
+                type="button"
+                className="btn"
+                id="pause-resume-timer-btn"
+                onClick={() => {
+                  setIsPaused(!isPaused);
+                }}
+              >
+                <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
+              </button>
+              <button
+                type="button"
+                className="btn"
+                id="stop-timer-btn"
+                onClick={() => {
+                  setIsOn(false);
+                }}
+              >
+                <FontAwesomeIcon icon={faCircleStop} />
+              </button>
+            </div>
           </>
         )}
       </div>
