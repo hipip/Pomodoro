@@ -3,7 +3,6 @@ import "./App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCaretDown,
-  faCaretLeft,
   faCaretUp,
   faPause,
   faPlay,
@@ -11,7 +10,7 @@ import {
 import { faCircleStop } from "@fortawesome/free-regular-svg-icons";
 
 function App() {
-  const [pomodoro, setPomodoro] = useState(25);
+  const [pomodoro, setPomodoro] = useState(1);
   const [shortBreak, setShortBreak] = useState(5);
   const [longBreak, setLongBreak] = useState(15);
   const [time, setTime] = useState(pomodoro * 60);
@@ -54,6 +53,9 @@ function App() {
       return () => {
         clearTimeout(key);
       };
+    }
+    if (time === 0) {
+      setIsOn(false);
     }
   }, [isOn, isPaused, time]);
 
