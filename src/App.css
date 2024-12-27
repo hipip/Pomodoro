@@ -7,6 +7,10 @@
   font-family: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
 .App {
   display: flex;
   justify-content: center;
@@ -38,14 +42,13 @@
   padding: 80px;
   min-height: 450px;
   min-width: 380px;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
   box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.9);
   color: white;
 }
 
 .btn {
-  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -96,4 +99,68 @@
   width: 50px;
   height: 50px;
   padding: 20px;
+}
+
+#toggle-settings-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  position: fixed;
+  top: 0;
+  right: 0;
+  margin: 80px;
+  width: 50px;
+  height: 50px;
+  color: black;
+  border-radius: 50%;
+  outline: none;
+  border: none;
+  font-size: 1.3rem;
+}
+#toggle-settings-btn:hover {
+  box-shadow: 0 0 30px -2px white;
+}
+
+.settings-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  text-align: center;
+  padding: 60px 100px;
+  border-radius: 30px;
+  min-width: 600px;
+  backdrop-filter: blur(5px);
+  z-index: 99;
+  color: white;
+}
+.settings-items {
+  margin: 30px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 50px;
+  gap: 50px;
+}
+
+.settings-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 10px;
+}
+.settings-item-labels {
+  display: flex;
+  justify-content: space-between;
+}
+#close-settings-btn {
+  margin: 20px auto;
+  background-color: green;
+  transition: 0.35s ease-in-out;
+}
+
+#close-settings-btn:hover {
+  box-shadow: 0 0 40px -2px rgb(0, 192, 0);
 }

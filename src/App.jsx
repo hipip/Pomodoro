@@ -8,9 +8,11 @@ import {
   faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { faCircleStop } from "@fortawesome/free-regular-svg-icons";
+import SettingsToggleBtn from "./components/SettingsToggleBtn";
+import SettingsModal from "./components/SettingsModal";
 
 function App() {
-  const [pomodoro, setPomodoro] = useState(1);
+  const [pomodoro, setPomodoro] = useState(25);
   const [shortBreak, setShortBreak] = useState(5);
   const [longBreak, setLongBreak] = useState(15);
   const [time, setTime] = useState(pomodoro * 60);
@@ -19,10 +21,14 @@ function App() {
   const [isPaused, setIsPaused] = useState(false);
   const [mainColor, setMainColor] = useState("#D42C2F");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const [bgImgUrl, setBgImgUrl] = useState(
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   );
+
+  const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
+  const closeSettings = () => setIsSettingsOpen(false);
 
   const timeSetter = () => {
     if (mode === "Pomodoro") setTime(pomodoro * 60);
@@ -155,6 +161,35 @@ function App() {
         )}
       </div>
       <div className="bg-overlay" style={{ backgroundColor: mainColor }}></div>
+      <SettingsToggleBtn toggleSettings={toggleSettings} />
+      {isSettingsOpen && (
+        <SettingsModal
+          data={[
+            {
+              value: pomodoro,
+              setValue: setPomodoro,
+              label: "Pomodoro Duration",
+              min: 1,
+              max: 120,
+            },
+            {
+              value: shortBreak,
+              setValue: setShortBreak,
+              label: "Short Break Duration",
+              min: 1,
+              max: 20,
+            },
+            {
+              value: longBreak,
+              setValue: setLongBreak,
+              label: "Long Break Duration",
+              min: 1,
+              max: 20,
+            },
+          ]}
+          closeSettings={closeSettings}
+        />
+      )}
     </div>
   );
 }
