@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import "./App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -12,16 +12,60 @@ import SettingsToggleBtn from "./components/SettingsToggleBtn";
 import SettingsModal from "./components/SettingsModal";
 
 function App() {
-  const [pomodoro, setPomodoro] = useState(25);
-  const [shortBreak, setShortBreak] = useState(5);
-  const [longBreak, setLongBreak] = useState(15);
-  const [time, setTime] = useState(pomodoro * 60);
-  const [mode, setMode] = useState("Pomodoro");
-  const [isOn, setIsOn] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [mainColor, setMainColor] = useState("#D42C2F");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const pomodoroReducer = (state, action) => {
+    switch (action.type) {
+      case "set-time-to-mode": {
+        const time =
+          state.mode === "pomodoro"
+            ? state.pomodoro * 60
+            : state.mode === "short break"
+            ? state.shortBreak * 60
+            : state.longBreak * 60;
+        return { ...state, time };
+      }
+      case "set-time": {
+        return { ...state, time: action.value };
+      }
+      case "start": {
+        return { ...state, isActive: true, isPaused: false };
+      }
+      case "pause": {
+        return { ...state, isPaused: true };
+      }
+      case "resume": {
+        return { ...state, isPaused: false };
+      }
+      case "stop": {
+        return { ...state, isActive: false, isPaused: false };
+      }
+      case "set-mode": {
+        return { ...state, mode: action.mode };
+      }
+      case "set-pomodoro": {
+        return { ...state, pomodoro: action.value };
+      }
+      case "set-short-break": {
+        return { ...state, shortBreak: action.value };
+      }
+      case "set-long-break": {
+        return { ...state, longBreak: action.value };
+      }
+    }
+  };
+
+  const [pomodoroState, pomodoroDispatch] = useReducer(pomodoroReducer, {
+    pomodoro: 25,
+    shortBreak: 5,
+    longBreak: 15,
+    time: 25 * 60,
+    mode: "pomodoro",
+    isActive: false,
+    isPaused: false,
+  });
 
   const [bgImgUrl, setBgImgUrl] = useState(
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -30,14 +74,8 @@ function App() {
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
   const closeSettings = () => setIsSettingsOpen(false);
 
-  const timeSetter = () => {
-    if (mode === "Pomodoro") setTime(pomodoro * 60);
-    else if (mode === "Short Break") setTime(shortBreak * 60);
-    else setTime(longBreak * 60);
-  };
-
   useEffect(() => {
-    if (mode === "Pomodoro") {
+    if (pomodoroState.mode === "pomodoro") {
       setMainColor("#D42C2F");
       setBgImgUrl(
         "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -48,27 +86,31 @@ function App() {
         "https://images.unsplash.com/photo-1432889490240-84df33d47091?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
       );
     }
-  }, [mode]);
+  }, [pomodoroState.mode]);
 
   useEffect(() => {
-    if (isOn && time !== 0 && !isPaused) {
+    if (
+      pomodoroState.isActive &&
+      pomodoroState.time !== 0 &&
+      !pomodoroState.isPaused
+    ) {
       const key = setTimeout(() => {
-        setTime((time) => time - 1);
+        pomodoroDispatch({ type: "set-time", value: pomodoroState.time - 1 });
       }, 1000);
 
       return () => {
         clearTimeout(key);
       };
     }
-    if (time === 0) {
-      setIsOn(false);
+    if (pomodoroState.time === 0) {
+      pomodoroDispatch({ type: "stop" });
     }
-  }, [isOn, isPaused, time]);
+  }, [pomodoroState.isActive, pomodoroState.isPaused, pomodoroState.time]);
 
   return (
     <div className="App" style={{ backgroundImage: `url(${bgImgUrl})` }}>
       <div className="pomodoro-container">
-        {!isOn && (
+        {!pomodoroState.isActive && (
           <>
             {isSelectOpen && (
               <div className="select-container">
@@ -77,7 +119,7 @@ function App() {
                   id="mode-pomodoro-btn"
                   className="btn"
                   onClick={() => {
-                    setMode("Pomodoro");
+                    pomodoroDispatch({ type: "set-mode", mode: "pomodoro" });
                     setIsSelectOpen(false);
                   }}
                 >
@@ -88,7 +130,7 @@ function App() {
                   id="mode-short-break-btn"
                   className="btn"
                   onClick={() => {
-                    setMode("Short Break");
+                    pomodoroDispatch({ type: "set-mode", mode: "short break" });
                     setIsSelectOpen(false);
                   }}
                 >
@@ -99,7 +141,7 @@ function App() {
                   id="mode-long-break-btn"
                   className="btn"
                   onClick={() => {
-                    setMode("Long Break");
+                    pomodoroDispatch({ type: "set-mode", mode: "long break" });
                     setIsSelectOpen(false);
                   }}
                 >
@@ -112,28 +154,27 @@ function App() {
               className="btn"
               onClick={() => setIsSelectOpen(!isSelectOpen)}
             >
-              {mode}{" "}
+              {pomodoroState.mode}{" "}
               <FontAwesomeIcon icon={isSelectOpen ? faCaretUp : faCaretDown} />
             </button>
             <button
               className="btn"
               id="start-btn"
               onClick={() => {
-                setIsOn(true);
-                setIsPaused(false);
-                timeSetter();
+                pomodoroDispatch({ type: "set-time-to-mode" });
+                pomodoroDispatch({ type: "start" });
               }}
             >
               <FontAwesomeIcon icon={faPlay} />
             </button>
           </>
         )}
-        {isOn && (
+        {pomodoroState.isActive && (
           <>
-            <h3>{mode}</h3>
+            <h3>{pomodoroState.mode}</h3>
             <h1 className="timer-time">
-              {String(Math.floor(time / 60)).padStart(2, "0")}:
-              {String(time % 60).padStart(2, "0")}
+              {String(Math.floor(pomodoroState.time / 60)).padStart(2, "0")}:
+              {String(pomodoroState.time % 60).padStart(2, "0")}
             </h1>
             <div className="btns-container">
               <button
@@ -141,17 +182,21 @@ function App() {
                 className="btn"
                 id="pause-resume-timer-btn"
                 onClick={() => {
-                  setIsPaused(!isPaused);
+                  pomodoroDispatch({
+                    type: pomodoroState.isPaused ? "resume" : "pause",
+                  });
                 }}
               >
-                <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
+                <FontAwesomeIcon
+                  icon={pomodoroState.isPaused ? faPlay : faPause}
+                />
               </button>
               <button
                 type="button"
                 className="btn"
                 id="stop-timer-btn"
                 onClick={() => {
-                  setIsOn(false);
+                  pomodoroDispatch({ type: "stop" });
                 }}
               >
                 <FontAwesomeIcon icon={faCircleStop} />
@@ -166,22 +211,25 @@ function App() {
         <SettingsModal
           data={[
             {
-              value: pomodoro,
-              setValue: setPomodoro,
+              value: pomodoroState.pomodoro,
+              setValue: (value) =>
+                pomodoroDispatch({ type: "set-pomodoro", value }),
               label: "Pomodoro Duration",
               min: 1,
               max: 120,
             },
             {
-              value: shortBreak,
-              setValue: setShortBreak,
+              value: pomodoroState.shortBreak,
+              setValue: (value) =>
+                pomodoroDispatch({ type: "set-short-break", value }),
               label: "Short Break Duration",
               min: 1,
               max: 20,
             },
             {
-              value: longBreak,
-              setValue: setLongBreak,
+              value: pomodoroState.longBreak,
+              setValue: (value) =>
+                pomodoroDispatch({ type: "set-long-break", value }),
               label: "Long Break Duration",
               min: 1,
               max: 20,
