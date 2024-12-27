@@ -21,7 +21,7 @@ button {
   background-size: cover;
 }
 .bg-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -48,6 +48,14 @@ button {
   color: white;
 }
 
+@media (max-width: 400px) {
+  .pomodoro-container {
+    width: 100vw;
+    border-radius: 0;
+    padding: 0;
+  }
+}
+
 .btn {
   display: flex;
   justify-content: center;
@@ -57,7 +65,7 @@ button {
   border-radius: 30px;
   border: none;
   outline: none;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
   color: white;
@@ -74,7 +82,7 @@ button {
 .select-container {
   z-index: 2;
   position: absolute;
-  top: -40%;
+  top: -5rem;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -109,7 +117,7 @@ button {
   position: fixed;
   top: 0;
   right: 0;
-  margin: 80px;
+  margin: 2rem;
   width: 50px;
   height: 50px;
   color: black;
