@@ -104,6 +104,11 @@ function App() {
     }
     if (pomodoroState.time === 0) {
       pomodoroDispatch({ type: "stop" });
+      if (pomodoroState.mode === "pomodoro") {
+        pomodoroDispatch({ type: "set-mode", mode: "short break" });
+        pomodoroDispatch({ type: "set-time-to-mode" });
+        pomodoroDispatch({ type: "start" });
+      }
     }
   }, [pomodoroState.isActive, pomodoroState.isPaused, pomodoroState.time]);
 
