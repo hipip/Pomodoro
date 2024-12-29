@@ -16,6 +16,12 @@ function App() {
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  const formatTime = (time) => {
+    const minutes = String(Math.floor(time / 60)).padStart(2, "0");
+    const seconds = String(time % 60).padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  };
+
   const pomodoroReducer = (state, action) => {
     switch (action.type) {
       case "set-time-to-mode": {
@@ -89,28 +95,40 @@ function App() {
   }, [pomodoroState.mode]);
 
   useEffect(() => {
-    if (
-      pomodoroState.isActive &&
-      pomodoroState.time !== 0 &&
-      !pomodoroState.isPaused
-    ) {
-      const key = setTimeout(() => {
-        pomodoroDispatch({ type: "set-time", value: pomodoroState.time - 1 });
-      }, 1000);
+    let intervalKey;
 
-      return () => {
-        clearTimeout(key);
-      };
+    if (pomodoroState.isActive && !pomodoroState.isPaused) {
+      const endTime = Date.now() + pomodoroState.time * 1000;
+
+      intervalKey = setInterval(() => {
+        const remainingTime = Math.max(
+          0,
+          Math.round((endTime - Date.now()) / 1000)
+        );
+
+        pomodoroDispatch({ type: "set-time", value: remainingTime });
+
+        if (remainingTime === 0) {
+          clearInterval(intervalKey);
+          pomodoroDispatch({ type: "stop" });
+
+          if (pomodoroState.mode === "pomodoro") {
+            pomodoroDispatch({ type: "set-mode", mode: "short break" });
+            pomodoroDispatch({ type: "set-time-to-mode" });
+            pomodoroDispatch({ type: "start" });
+          }
+        }
+      }, 1000);
     }
-    if (pomodoroState.time === 0) {
-      pomodoroDispatch({ type: "stop" });
-      if (pomodoroState.mode === "pomodoro") {
-        pomodoroDispatch({ type: "set-mode", mode: "short break" });
-        pomodoroDispatch({ type: "set-time-to-mode" });
-        pomodoroDispatch({ type: "start" });
-      }
-    }
+
+    return () => {
+      clearInterval(intervalKey);
+    };
   }, [pomodoroState.isActive, pomodoroState.isPaused, pomodoroState.time]);
+
+  useEffect(() => {
+    document.title = formatTime(pomodoroState.time);
+  }, [pomodoroState.time]);
 
   return (
     <div className="App" style={{ backgroundImage: `url(${bgImgUrl})` }}>
@@ -177,10 +195,7 @@ function App() {
         {pomodoroState.isActive && (
           <>
             <h3>{pomodoroState.mode}</h3>
-            <h1 className="timer-time">
-              {String(Math.floor(pomodoroState.time / 60)).padStart(2, "0")}:
-              {String(pomodoroState.time % 60).padStart(2, "0")}
-            </h1>
+            <h1 className="timer-time">{formatTime(pomodoroState.time)}</h1>
             <div className="btns-container">
               <button
                 type="button"
